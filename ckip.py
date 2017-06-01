@@ -1,7 +1,9 @@
 #-*-coding:utf-8-*-
-import urllib, urllib2, re
+import urllib, re
+import urllib.request as urllib2
 
 def seg(text):
+    '''
     if not isinstance(text, unicode):
         try:
             text = text.decode('utf-8')
@@ -11,29 +13,30 @@ def seg(text):
         text = text.encode('cp950')
     except:
         raise Exception('CKIP Segmentator only accepts characters encoded in CP950; however, it seems that there are some characters which cannot be encoded in CP950.')
+    '''
     url_tar = 'http://sunlight.iis.sinica.edu.tw/cgi-bin/text.cgi'
 
-    text = hack(text)
+    #text = hack(text)
 
     opener = urllib2.build_opener()
-    postdata = urllib.urlencode({
-        'query':text,
-        'Submit':u'送出'.encode('cp950')
-        })
+    postdata = urllib.parse.urlencode({
+        'query':text.encode('cp950'),
+        'Submit':'送出'.encode('cp950')
+        }).encode('cp950')
 
-    res = opener.open(url_tar, postdata).read()
+    res = opener.open(url_tar, postdata).read().decode('cp950')
     pat = re.compile("URL=\'/uwextract/pool/(\d*?).html\'")
     num = pat.search(res).group(1)
 
     url_fin = 'http://sunlight.iis.sinica.edu.tw/uwextract/show.php?id=%s&type=tag' % num
 
-    seg = urllib2.urlopen(url_fin).read()
+    seg = urllib2.urlopen(url_fin).read().decode('cp950')
     break_sign = '-'*130
 
     seg_pat = re.compile('<pre>(.*?)</pre>', re.DOTALL)
     seg_clean = seg_pat.search(seg).group(1)
     seg_clean = seg_clean.replace(break_sign, '')
-    seg_clean = seg_clean.decode('cp950', 'ignore')
+    #seg_clean = seg_clean.decode('cp950', 'ignore')
     seg_clean = seg_clean.strip('\n')
     fs = u'\u3000' # fullwidth space
     seg_clean = seg_clean.strip(fs)
@@ -54,8 +57,8 @@ def hack(text):
     return text
 
 def num_patch(string):
-    num_h = [unichr(i) for i in xrange(48, 58)]
-    num_f = [unichr(i) for i in xrange(65296, 65306)]
+    num_h = [chr(i) for i in range(48, 58)]
+    num_f = [chr(i) for i in range(65296, 65306)]
     num_patch =  dict(zip(num_f, num_h))
     output = ''
     for i in string:
