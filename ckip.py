@@ -20,7 +20,7 @@ def seg(text):
 
     opener = urllib2.build_opener()
     postdata = urllib.parse.urlencode({
-        'query':text.encode('cp950'),
+        'query':text.encode('cp950', errors='ignore'),
         'Submit':'送出'.encode('cp950')
         }).encode('cp950')
 
